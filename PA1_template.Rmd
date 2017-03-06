@@ -5,10 +5,30 @@ output:
     keep_md: true
 ---
 
+```
+{r setup, include=FALSE}knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
 
 ## Loading and preprocessing the data
+#### 1. Load the data (i.e. read.csv())
 
+Show any code that is needed to
 
+```{r,warning=FALSE}
+zipname <- paste(getwd(), "activity.zip", sep = "/")
+download.file(url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", zipname)
+
+unzip(zipname, overwrite = TRUE)
+filename <- paste(getwd(), "activity.csv", sep = "/")
+
+activity <- read.csv(filename)
+```
+#### 2. Process/transform the data (if necessary) into a format suitable for your analysis
+
+```{r, warning=FALSE}
+dates_activity <- group_by(activity, date)
+```
 
 ## What is mean total number of steps taken per day?
 
