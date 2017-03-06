@@ -84,9 +84,55 @@ sum(is.na(activity$steps))
 ```
 There are **`r sum(is.na(activity$steps))`** rows with NAs.
 
-## Imputing missing values
+#### 2.Devise a strategy for filling in all of the missing values in the dataset. 
+
+Replace the NAs with the corresponding average for that interval.
+
+#### 3.Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r}
+no_ans <- merge(activity, steps_interval)
+no_ans$steps[is.na(no_ans$steps)] <- no_ans$average_steps[is.na(no_ans$steps)]
+no_ans <- no_ans[,c("steps","date","interval")] %>% arrange(date, interval)
+head(no_ans)
+```
+#### 4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r}
+dates_no_ans <- group_by(no_ans, date)
+summary_no_ans <- summarize(dates_no_ans, total_steps = sum(steps, na.rm = TRUE))
+hist(summary_no_ans$total_steps, breaks = 15)
+```
+The mean of of the total number of steps taken per day is `r mean(summary_no_ans$total_steps)`.
+The median of of the total number of steps taken per day is `r median(summary_no_ans$total_steps)`.
+
+The histogram now shows a much greater frequency in the center (around the mean). Using the interval means to replace NAs caused this effect.
+
+### Are there differences in activity patterns between weekdays and weekends?
+
+#### 1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r}
+activity_wd <- mutate(activity, weekday = as.factor(ifelse(substr(weekdays(as.Date(date, format = "%Y-%m-%d")),1,1) == "z", "weekend", ifelse (substr(weekdays(as.Date(date, format = "%Y-%m-%d")),1,1) == "s", "weekend", "weekday"))))
+```
+#### 2. Panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
+```{r}
+par(mfrow=c(2,1))
+
+interval_activity_we <- group_by(activity_wd %>% filter(weekday == "weekend"), interval)
+steps_interval_we <- summarize(interval_activity_we, average_steps = mean(steps, na.rm = TRUE))
+steps <- ts(steps_interval_we$average_steps)
+plot.ts(steps, main = "weekend")
+
+interval_activity_wd <- group_by(activity_wd %>% filter(weekday == "weekday"), interval)
+steps_interval_wd <- summarize(interval_activity_wd, average_steps = mean(steps, na.rm = TRUE))
+steps <- ts(steps_interval_wd$average_steps)
+plot.ts(steps, main = "weekday")
+```
 
 
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+
+
